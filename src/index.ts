@@ -9,7 +9,7 @@ const main = async () => {
   let worker = [
     "f3q4twolpyaxozwbkp44nmqgswenu4jpgu2w3ff5twyhkx2x4uhnnt7b3luos3sjmnpogywqyct55jmfkgnuta",
   ];
-  let data = gasCalculator.getAllWorkerGasByPage(worker, 2752485, 2752486);
+  let data = gasCalculator.getAllWorkerGasByPage(worker, 2718319, 2752486);
 
   console.log(`${JSON.stringify(data)}`);
 };
