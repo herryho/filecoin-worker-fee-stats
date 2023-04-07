@@ -1,4 +1,3 @@
-const ExcelJS = require("exceljs");
 const path = require("path");
 const fs = require("fs");
 const axios = require("axios");
@@ -67,7 +66,7 @@ export default class WorkerGasCalculator {
 
         //!TO-do 这里需要写入数据库，一页一页地存，不然怕一次性数据量太大
         if (toInsertList.length) {
-          await this.writeNewData(toInsertList);
+          await this.saveToCSV(toInsertList);
         }
 
         // 等待5秒，再去获取
@@ -89,60 +88,19 @@ export default class WorkerGasCalculator {
     );
   }
 
-  async writeNewData(newData: any) {
-    // 读取Excel文件
-    const filePath = path.join(__dirname, "data.xlsx");
-    const workbook = new ExcelJS.Workbook();
-    if (fs.existsSync(filePath)) {
-      workbook.xlsx
-        .readFile(filePath)
-        .then(() => {
-          // 获取第一个工作表
-          const worksheet = workbook.getWorksheet(1);
-
-          // 逐行添加数据
-          newData.forEach((data: any) => {
-            const newRow = worksheet.addRow(data);
-            newRow.commit();
-          });
-
-          console.log(`worksheet: ${JSON.stringify(worksheet._rows[0])}`);
-
-          // 保存Excel文件
-          return workbook.xlsx.writeFile(filePath);
-        })
-        .then(() => {
-          console.log("Data added to Excel file.");
-        })
-        .catch((error: any) => {
-          console.log(error);
-        });
-    } else {
-      // 如果文件不存在，创建一个新的Excel文件并添加数据
-      const worksheet = workbook.addWorksheet("Sheet1");
-      worksheet.addRow([
-        "message_hash",
-        "block_height",
-        "message_cid",
-        "timestamp",
-        "from",
-        "to",
-        "value",
-        "type",
-      ]);
-      newData.forEach((data: any) => {
-        worksheet.addRow(data);
-      });
-
-      console.log(`worksheet: ${JSON.stringify(worksheet)}`);
-      workbook.xlsx
-        .writeFile(filePath)
-        .then(() => {
-          console.log("Data added to Excel file.");
-        })
-        .catch((error: any) => {
-          console.log(error);
-        });
-    }
+  // 保存数据到CSV文件
+  async saveToCSV(dataArray: any) {
+    const filePath = path.join(__dirname, "data.csv");
+    let rows = "";
+    dataArray.forEach((data: any) => {
+      rows += `${data.message_hash},${data.block_height},${data.message_cid},${data.timestamp},${data.from},${data.to},${data.value},${data.type}\n`;
+    });
+    fs.appendFile(filePath, rows, (err: any) => {
+      if (err) {
+        console.error(`Failed to save data to CSV: ${err}`);
+      } else {
+        console.log(`Data saved to ${filePath}`);
+      }
+    });
   }
 }
